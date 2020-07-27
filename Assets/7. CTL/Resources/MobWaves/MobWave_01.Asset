@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 624de19cd94b17546852169a0052cffb, type: 3}
   m_Name: MobWave_01
   m_EditorClassIdentifier: 
-  NumberOfMobsToSpawn: 10
-  ExperiencePerKill: 10
-  WaveCompletionValue: 20
+  NumberOfMobsToSpawn: 5
+  ExperiencePerKill: 20
+  WaveCompletionValue: 50
   HealthMultiplicator: 1
-  DamageMultiplicator: 1
+  DamageMultiplicator: 1.5
   ResistanceMultiplicator: 1

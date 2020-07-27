@@ -90,7 +90,7 @@ public class CharacterInventory : MonoSingleton<CharacterInventory>
         // Checking for a hotbar key to be pressed
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            Debug.Log("1 Button Input Detected");
+            //Debug.Log("1 Button Input Detected");
             TriggerItemUse(101);
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))

@@ -1,4 +1,5 @@
 //using NUnit.Framework;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -37,6 +38,35 @@ public class HeroController : MonoBehaviour
         // We allready have the CharacterStats attached to the Hero in the Characterstats script so we simply need to access it
         // via GetComponent!
         charStats = GetComponent<CharacterStats>();
+    }
+
+    private void Start()
+    {
+        #region Kommentar wieso wir hier die GameManager Methode Subscriben und nicht imm GameManager selber
+        // You might wonder why we are adding a listenern here rather than in the GameManager!
+        // We want to make sure that the CharacterStats Component  of the Hero is fully initialized before 
+        // adding a listener!
+
+        // Der GameManager selber hat auch keine Referenz zum Character_SO
+
+        // Wdh. Ein Event kann nur von der eigenen Klasse invoked werden. 
+        // Es kann jedoch von jeder Klasse aus Subscribed werden!
+        #endregion
+
+        #region Add Listeners to Events
+        charStats.charDefinition.OnHeroLevelUp += GameManager.Instance.HandleHeroLevelUp;
+        charStats.charDefinition.OnHeroGainedHp += GameManager.Instance.HandleHeroGainedHp;
+        charStats.charDefinition.OnHeroTakeDmg += GameManager.Instance.HandleHeroTakeDmg;
+        charStats.charDefinition.OnHeroDeath += GameManager.Instance.HandleHeroDeath;
+        charStats.charDefinition.OnHeroInitialized.AddListener(GameManager.Instance.HandleHeroInit);
+        #endregion
+
+        #region Invoking von einer anderen Klasse mit UnityEvents
+        // ich dachte nur die Klasse, die das Event declared kann sein Event Invoken!
+        // Ah lol UnityEvents können von überall invoked werden! Das ist das starke!
+        // Actions können nur von der Klasse, die die Action declared Invoked werden!
+        #endregion
+        charStats.charDefinition.OnHeroInitialized?.Invoke();
     }
 
     #endregion
@@ -209,8 +239,28 @@ public class HeroController : MonoBehaviour
         }
     }
 
-    #region CallBack
+    #region HelperMethods/Wrappers
 
+    public int GetCurrentLevel()
+    {
+        return charStats.charDefinition.charLevel;
+    }
+
+    public int GetCurrentHealth()
+    {
+        return charStats.charDefinition.currentHealth;
+    }
+
+    public int GetMaxHealth()
+    {
+        return charStats.charDefinition.maxHealth;
+    }
+
+    #endregion
+
+    #region CallBack/ EventHandlers
+
+    // These are attached in the Inspector
     public void HandleMobKilled(int xpAmount)
     {
         // This will call charStats IncreaseXP which is wrapper and will call Charcacter_SO IncreaseXP
@@ -226,7 +276,7 @@ public class HeroController : MonoBehaviour
 
     public void HandleOutOfWaves()
     {
-        Debug.LogFormat("Out of Waves. You have won");
+        
     }
 
     #endregion

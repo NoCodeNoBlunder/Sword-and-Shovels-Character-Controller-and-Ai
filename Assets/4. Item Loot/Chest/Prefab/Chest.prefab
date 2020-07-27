@@ -345,9 +345,10 @@ GameObject:
   - component: {fileID: 54761189718898370}
   - component: {fileID: 208739638662243792}
   - component: {fileID: 114264986705954496}
+  - component: {fileID: 7988589085833696612}
   m_Layer: 9
   m_Name: Chest_Closed
-  m_TagString: Untagged
+  m_TagString: Chest
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 8
@@ -458,7 +459,7 @@ MonoBehaviour:
             m_FloatArgument: 0
             m_StringArgument: 
             m_BoolArgument: 1
-          m_CallState: 2
+          m_CallState: 1
         - m_Target: {fileID: 175205384328134113}
           m_MethodName: CreateSpawn
           m_Mode: 1
@@ -480,5 +481,19 @@ MonoBehaviour:
             m_FloatArgument: 0
             m_StringArgument: 
             m_BoolArgument: 0
-          m_CallState: 2
+          m_CallState: 1
   delegates: []
+--- !u!114 &7988589085833696612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1843181581300458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bf65860f838a2f4d84704d4cf3a8b1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chestOpened: {fileID: 1126448651254142}
+  spawner: {fileID: 175205384328134113}

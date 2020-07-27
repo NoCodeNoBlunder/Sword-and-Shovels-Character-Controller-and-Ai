@@ -44,9 +44,14 @@ public class SpawnItem : MonoBehaviour,ISpawns
                 #region Frage warum müssen wir das Material etc assignen wenn das SO das bereits für die Items macht???
                 // Antwort: Das SO hat die Items definiert, jedoch nie wirklich die Items erstellt!! Wir spawnen keine GameObject Prefabs direkt
                 // sondern spawnen unsere Scriptable Objects, die von dem SO definiert wurden aber noch zusammengebaut werden müssen!!
+                // Das So ist sozusagen nur ein BluePrint der noch zusammen gebaut werden muss!
 
                 // We need to fill our other variables. Why tho is this not allready attached to the gameObjects automatically???????
                 // Ich verstehe das hier nicht wir haben doch jedem Item sein Material im SO zugewiesen. Wieso müssen wir das jetzt erneut machen? 
+                #endregion
+
+                #region Problem, wenn das Objekt mehrere Renderer hat!
+
                 #endregion
                 itemMaterial = itemSpawned.GetComponent<Renderer>();
                 itemMaterial.material = ip.itemMaterial;
@@ -54,7 +59,7 @@ public class SpawnItem : MonoBehaviour,ISpawns
                 itemType = itemSpawned.GetComponent<ItemPickUp>();
                 itemType.itemDefinition = ip;
                 // Since we are in a loop we have to type break because we want to Method to stop running after we spawned an Object!
-                // We are looking for one specific thing and once we find that we want the loop to stop running
+                // We are looking for one specific thing and once we find that we want the loop to stop running.
                 break;
             }
         }

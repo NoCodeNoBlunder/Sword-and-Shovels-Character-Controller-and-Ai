@@ -29,8 +29,8 @@ public class StompAttack : AttackDefinition
             var collisionGo = collision.gameObject;
 
             // Check if we are ignoring the collision's layer, if so move to the next Object in collidedObjects
-            // New Keyword continue: Which is used in Loops. When a certain Condition is true. The loops skips the current object or current 
-            // loop index and moves on to the next index!
+            // New Keyword "continue": Which is used in Loops. When a certain Condition is true. The loops skips the current object or current 
+            // loop index and moves on to the next index! 
             if (Physics.GetIgnoreLayerCollision(layer, collisionGo.layer))
                 continue;
 

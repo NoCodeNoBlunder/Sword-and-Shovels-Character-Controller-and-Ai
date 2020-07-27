@@ -35,6 +35,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     // We are accessing our EventGameState from our Events class container!
     public Events.EventGameState OnGameStateChanged;
+
     public GameObject[] systemPrefabs;
 
     private List<GameObject> instancedSystemPrefabs;
@@ -42,6 +43,26 @@ public class GameManager : MonoSingleton<GameManager>
     //private GameState currentGameState = GameState.PREGAME;
 
     private string currentScene = string.Empty;
+
+    // Private Accessor for the Hero!
+    private HeroController heroController;
+    private HeroController hero
+    {
+        get
+        {
+            #region Lazy Inititialization Explained. 
+            // Lazy Initialization! Das funktioniert nur weil wir nur eine Instanz vom Spieler haben!
+
+            // You might be wondering why dont we just set the heroController in Start. The Problem with this approach is that
+            // The GameManager will exists and Start before the Hero exists leaving the value null!
+            // We could also use FindObjectOfType everytime we need the HeroController but that is a very expansive call!
+            #endregion
+            if (heroController == null)
+                heroController = FindObjectOfType<HeroController>();  
+
+            return heroController;
+        }
+    }
 
     #endregion
 
@@ -179,7 +200,8 @@ public class GameManager : MonoSingleton<GameManager>
                 break;
             case GameState.PAUSE:
                 Time.timeScale = 0;
-                UIManager.Instance.gameObject.SetActive(true);
+                // No longer needed!
+                //UIManager.Instance.gameObject.SetActive(true);
                 break;
 
             default:
@@ -258,6 +280,49 @@ public class GameManager : MonoSingleton<GameManager>
             instancedSystemPrefabs.Add(prefabInstance);
         }
     }
+
+    #region EventHandlers/ CallBacks
+
+    public void HandleHeroLevelUp(int newLevel)
+    {
+        Debug.LogFormat("The Hero is now Level {0} !", newLevel);
+        UIManager.Instance.UpdateUnitFrame(hero);
+        SoundManager.Instance.PlaySoundEffect(SoundEffect.LEVELUP);
+    }
+
+    public void HandleHeroGainedHp(int currentHealth)
+    {
+        UIManager.Instance.UpdateUnitFrame(hero);
+    }
+
+    public void HandleHeroTakeDmg(int currentHealth)
+    {
+        UIManager.Instance.UpdateUnitFrame(hero);
+        SoundManager.Instance.PlaySoundEffect(SoundEffect.HEROHIT);
+    }
+
+    public void HandleHeroDeath()
+    {
+        UIManager.Instance.UpdateUnitFrame(hero);
+        UIManager.Instance.PlayGameOver();
+    }
+
+    public void HandleHeroInit()
+    {
+        UIManager.Instance.InitUnitFrame();
+    }
+
+    public void HandleWaveSpawned()
+    {
+        UIManager.Instance.PlayNextWave();
+    }
+
+    public void HandleHeroWin()
+    {
+        UIManager.Instance.PlayYouWin();
+    }
+
+    #endregion
 
     protected override void OnDestroy()
     {

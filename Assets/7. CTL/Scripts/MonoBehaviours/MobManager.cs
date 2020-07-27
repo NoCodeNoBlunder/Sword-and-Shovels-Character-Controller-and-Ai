@@ -11,6 +11,8 @@ public class MobManager : MonoSingleton<MobManager>
     // We can Add listeners to them via the Inspector!
     public Events.EventIntegerEvent OnMobKilled;
     public Events.EventIntegerEvent OnWaveCompleted;
+    // Diese Beiden sind ähnlich aber in wirklichkeit sind sie sehr verschieden! NextWave wird nur Invoked wenn es noch eine Weite Wave geben wird!
+    public UnityEvent OnWaveSpawned; 
     // We can do the same for UnityEvents without a parameter!
     public UnityEvent OnOutOfWaves;
 
@@ -28,20 +30,38 @@ public class MobManager : MonoSingleton<MobManager>
     void Start()
     {
         spawnpoints = FindObjectsOfType<Spawnpoint>();
-        SpawnWave();
+        StartCoroutine(SpawnWave());
     }
 
-    public void SpawnWave()
+    // Sehr Starke Methode!
+    // Ich habe diese Methode selber zu einem IEnumarator gemacht, damit die Waves nicht instantly nacheiander spawnen!
+    public IEnumerator SpawnWave()
     {
         // We have to include this check to see if we have run out of waves!
+        // We substract the 1 cause arrays are 0 based!
+        // Dieses minus 1 muss ich noch verstehen!
         if (Waves.Length -1 < currentWaveIndex)
         {
             OnOutOfWaves?.Invoke();
-            return;
+            yield break;
         }
 
-        // We substract the 1 cause arrays are 0 based!
-        // Dieses minus 1 muss ich noch verstehen!
+        // Wir wollen diesen Sound erst spielen ab der zweiten Wave!
+        if(currentWaveIndex > 0)
+        {
+            SoundManager.Instance.PlaySoundEffect(SoundEffect.NEXTWAVE);
+            OnWaveSpawned?.Invoke();
+        }
+
+        if (currentWaveIndex == 0)
+        {
+            yield return new WaitForSeconds(0);
+        }
+        else
+        {
+            yield return new WaitForSeconds(2);
+        }
+
         activeMobs = Waves[currentWaveIndex].NumberOfMobsToSpawn;
 
         for (int i = 0; i < Waves[currentWaveIndex].NumberOfMobsToSpawn; i++)
@@ -95,9 +115,9 @@ public class MobManager : MonoSingleton<MobManager>
         // Wir müssen eine Referent zum parent storen, da wir diese später wieder brauchen!
         Transform parent = closestWaypoint.transform.parent;
         Transform[] allWaypoints = parent.GetComponentsInChildren<Transform>();
+
         // The Problem is that this would return the Transform of our parent also which we dont want we only want the transforms of
         // our children! 
-
         var transforms = allWaypoints.Where(t => t != parent);
         return transforms.ToArray();
     }
@@ -106,6 +126,9 @@ public class MobManager : MonoSingleton<MobManager>
     // unser Invoke von unserem NPCs aus zu triggern!
     public void HandleMobDeath()
     {
+        // This should be done on top of the Method!
+        SoundManager.Instance.PlaySoundEffect(SoundEffect.MOBDEATH);
+
         #region Kommentar wieso wir hier eine Referenz erstellen!
         // Anstatt das so "OnMobKilled.Invoke?.Invoke(Waves[currentWaveIndex].ExperiencePerKill) zu machen können wir eine Referenz erstellen!
         // Das spart uns auch schreibarbeit uns sollte immer gemacht werden! Außerdem erhöhr es die lesbarkeit nur pluspunkte! Es hat also nur vorteile 
@@ -126,7 +149,10 @@ public class MobManager : MonoSingleton<MobManager>
             //ASSERTION: There is no Mobs left: When there is less than 4 Mobs they should be going towards the Player automatically!
             OnWaveCompleted?.Invoke(currentMobWave.WaveCompletionValue);
             currentWaveIndex++;
-            SpawnWave();
+
+            // Ich möchte nicht das SpawnWave direkt ausgeführt wird man soll etwas zeit haben!
+            // Deshalb werde ich diese Wave callen sobald der Exiter verschwindet!
+            StartCoroutine(SpawnWave());
         }
     }
 }

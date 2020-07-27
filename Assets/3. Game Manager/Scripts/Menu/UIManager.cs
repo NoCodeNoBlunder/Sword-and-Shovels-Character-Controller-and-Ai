@@ -28,6 +28,8 @@ public class UIManager : MonoSingleton<UIManager>
 #pragma warning disable 0649
     [SerializeField] MainMenu mainMenu;
     [SerializeField] PauseMenu pauseMenu;
+    [SerializeField] UnitFrame unitFrame;
+    [SerializeField] ExiterManager exiters;
     // It makes sense to have the dummyCamera be controlled by the UIManager because it contains it.
     [SerializeField] Camera dummyCamera;
 #pragma warning restore 0649
@@ -67,9 +69,10 @@ public class UIManager : MonoSingleton<UIManager>
     {
         // -This will also be modified as we are not using an FSM later on!
         //- ternary Operator again. NVM Ich bin garbage wir brauchen gar kein ternary Operator da wir einen bool returnen müssen und das geht auch ohne ternary.
-        // Starkes Logic statement wir passen eine Condition als bool argument
-
+        // Starkes Logic statement wir passen eine Condition als bool argument. Es macht sowohl setActive true sowie alse OPOP!
         pauseMenu.gameObject.SetActive(currentState == GameManager.GameState.PAUSE);
+        unitFrame.gameObject.SetActive(currentState == GameManager.GameState.RUNNING ||
+            currentState == GameManager.GameState.PAUSE);
     }
 
     // Here we are Propading the Information upwards. This Method is called when the Event OnMainMenuFadeComplete is raised
@@ -84,6 +87,35 @@ public class UIManager : MonoSingleton<UIManager>
     {
         dummyCamera.gameObject.SetActive(isActive);
     }
+
+    public void InitUnitFrame()
+    {
+        unitFrame.InitUnitFrame();
+    }
+
+    public void UpdateUnitFrame(HeroController hero)
+    {
+        unitFrame.UpdateUnitFrame(hero);
+    }
+
+    #region Play Exiters
+
+    public void PlayGameOver()
+    {
+        exiters.HandlePlayGameOver();
+    }
+
+    public void PlayNextWave()
+    {
+        exiters.HandlePlayNextWave();
+    }
+
+    public void PlayYouWin()
+    {
+        exiters.HandlePlayYouWin();
+    }
+
+    #endregion
 
     protected override void OnDestroy()
     {

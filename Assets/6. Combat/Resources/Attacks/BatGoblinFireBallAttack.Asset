@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cooldown: 3
   range: 6
-  minDamage: 2
-  maxDamage: 7
+  minDamage: 5
+  maxDamage: 10
   critMuliplayer: 1.5
   critChance: 0.1
   projectileToFire: {fileID: 114910134572949206, guid: ad9f874679f99e148901569b296c1975,
     type: 3}
-  projectileSpeed: 4
+  projectileSpeed: 10

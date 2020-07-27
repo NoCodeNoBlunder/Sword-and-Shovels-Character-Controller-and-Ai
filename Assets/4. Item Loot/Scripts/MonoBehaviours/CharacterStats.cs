@@ -80,8 +80,9 @@ public class CharacterStats : MonoBehaviour
         if (charDefinition.isHero)
         {
             // Akward, da wir eigentlich mit level 1 anfangen aber arrays it index 0 beginnen!
-            // Wir sollten einfach index 0 empty lassen imo! Und index sollte level 1 sein!
-            charDefinition.SetCharacterLevel(1);
+            // Wir sollten einfach index 0 empty lassen imo! Und index sollte level 1 sein! Dann haben wir jedoch das Problem, dass der Character
+            // der character immer ein höher angezeigt wird als er wirklich ist!
+            charDefinition.SetCharacterLevel(0);
         }
 
         #endregion
@@ -113,6 +114,12 @@ public class CharacterStats : MonoBehaviour
 
             charDefinition.charExperience = 0;
             charDefinition.charLevel = 1;
+        }
+
+        // Displays current Level in the Inspector!
+        for (int i = 0; i < charDefinition.charLevels.Length; i++)
+        {
+            charDefinition.charLevels[i].LEVEL = i + 1;
         }
         #endregion
     }
@@ -316,9 +323,9 @@ public class CharacterStats : MonoBehaviour
     // How is this Method called? It need to be called once the Level Threshhold has been surpassed!
     // This Method is only going to be a Wrapper! Das hätte ich wissen sollen, dass es hier nur ein Wrapper ist, wie bei den anderen Methoden
     // in dieser Klasse. Man sieht auch warum. Man muss sehr viel charDefinition schreiben!
-    public void IncreaseXP(int XPAmount)
+    public void IncreaseXP(int xp)
     {
-        charDefinition.GiveXP(XPAmount);
+        charDefinition.GiveXP(xp);
     }
 
     public void CharLevelUp()

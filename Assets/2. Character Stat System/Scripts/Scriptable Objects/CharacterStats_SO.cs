@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 //using UnityEditor;  // Siehe SaveCharacterStats Komment
 using UnityEngine;
+using UnityEngine.Events;
 
 // Scriptable Objects: This Scriptable Object will define our our Characters!
 
@@ -10,6 +12,9 @@ using UnityEngine;
 // fileName will be the default name of the Scriptable Object when we create it.
 // The menuName specifies under what name we will find it under Assest/Create/"menuName" we can have submenues!
 // the order specifies on what position we find the menuName in the Assets/Create dropdown. Order doesnt seem to work for some reason tho!
+
+// CharacterStats_So definiert alle Werte aber auch die Funktionalitäten also die Methoden wie die Werte verändert werden.
+// CharacterStats called dann diese Methoden mit soganannten wrappern! CharacterStats_SO hat also zugang zu allem was es benötigt!
 
 // A ScriptableObject has to derive from ScriptableObeject!!!!
 
@@ -37,7 +42,10 @@ public class CharacterStats_SO : ScriptableObject
         #endregion
         // We can acctually have a class inside another class??? WTF?
         // In this Custom class we define what happends when a character levels up!
-        // With this Custom class we can acctually define different level ups. For example a mage gets more mana and spellpower while a Tank gets more hp etc!
+        // With this Custom class we can acctually define different level ups. 
+        //For example a mage gets more mana and spellpower while a Tank gets more hp etc!
+
+        public int LEVEL = 0;
         public int maxHealth;
         public int maxMana;
         public int baseDamage;
@@ -56,6 +64,13 @@ public class CharacterStats_SO : ScriptableObject
     // In this case it is ok that other classes can each the variables! In other cases this is not ok! Siehe Properties!
     #endregion
 
+    public event Action<int> OnHeroLevelUp;
+    public event Action<int> OnHeroGainedHp;
+    public event Action<int> OnHeroTakeDmg;
+    public event Action OnHeroDeath;
+    public UnityEvent OnHeroInitialized;
+
+
     // Die wir dieses SO sowohl für den Hero als auch für NPCs nutzten müssen wir checken, ob es sich um den Hero handelt oder nicht!
     public bool isHero = false;
 
@@ -68,28 +83,37 @@ public class CharacterStats_SO : ScriptableObject
     // The field prefixed with max or base will change as the hero levels.
     // Variables prefixed with current will change during gameplay!
 
+    [Header("Level")]
+    public int charExperience = 0;
+    public int charLevel = 0;
+
+    [Header("Health")]
     public int maxHealth = 0;
     public int currentHealth = 0;
 
+    [Header("Mana")]
     public int maxMana = 0;
     public int currentMana = 0;
 
+    [Header("Damage")]
     public int baseDamage = 0;
     public int currentDamage = 0;
 
+    [Header("Resistance")]
     public float baseResistance = 0f;
     public float currentResistance = 0f;
+    public float currentArmor;
 
+    [Header("Wealth")]
     public int maxWealth = 0;
     public int currentWealth = 0;
 
     // Emcumbrance bedeutet belastung!
+    [Header("Encumbrance")]
     public float maxEncumbrance = 0f;
     public float currentEncumbrance = 0;
 
-    public int charExperience = 0;
-    public int charLevel = 0;
-
+    [Header("Levels")]
     #region Level Up Object Array
     // This array is displayed in the Inspector and can be modified in the Inspector by designers who will define what how our stats get modified when we level up.
     // In this case The array lenght is the ammount of levels we offer.
@@ -139,6 +163,10 @@ public class CharacterStats_SO : ScriptableObject
         {
             currentHealth += healthAmount;
         }
+
+        // We have to check if the Hero lost Health cause mobs also implement this class!
+        if(isHero)
+            OnHeroGainedHp?.Invoke(healthAmount);
     }
 
     public void ApplyMana(int manaAmount)
@@ -186,13 +214,19 @@ public class CharacterStats_SO : ScriptableObject
         // We made changes here in the Loot Chapter!
         Rigidbody newWeapon;
 
-        // Armour is a property we declared earlier.
         weapon = weaponPickUp;
         charInventory.inventoryDisplaySlots[2].sprite = weaponPickUp.itemDefinition.itemIcon;
         newWeapon = Instantiate(weaponPickUp.itemDefinition.itemWeaponSlotObject.weaponPrefab, weaponSlot.transform);
         // This is acctually clever code here 3 classes are working together!
-        // weaponPickUp stores information of type ItemPickUp which contains a field itemDefinition which is of type ItemPickUp_SO which contains a field itemAmount!
-        currentDamage += baseDamage + weaponPickUp.itemDefinition.itemAmount;
+        // weaponPickUp stores information of type ItemPickUp which contains a field itemDefinition, 
+        //which is of type ItemPickUp_SO which contains a field itemAmount!
+
+        // old way of doing it!
+        //currentDamage += baseDamage + weaponPickUp.itemDefinition.itemAmount;
+
+        // New sollution using average damage of the weapon!
+        currentDamage = baseDamage + weaponPickUp.itemDefinition.itemAmount;
+
         Debug.Log("current Damage is " + currentDamage);
     }
 
@@ -239,21 +273,44 @@ public class CharacterStats_SO : ScriptableObject
         }
     }
 
-    public void GiveXP(int xpAmount)
+    public void GiveXP(int xp)
     {
-        charExperience += xpAmount;
+        charExperience += xp;
 
-        if (charLevels[charLevel].requiredXP <= xpAmount)
+        if (charLevel < charLevels.Length)
         {
+            int levelTarget = charLevels[charLevel].requiredXP;
+
+            if (charExperience >= levelTarget)
+            {
+                SetCharacterLevel(charLevel);
+            }
+        }
+
+        #region Region Meine schwache Lösung 
+        /*
+        if (charLevels[charLevel].requiredXP <= xp)
+        {
+            // Check if there is any Levels left
+            // Beim XP geben muss schon gecheckt werden ob in ein neues Level gewechselt werden kann!
+
+            if (charLevel >= charLevels.Length)
+            {
+                Debug.LogWarning("There is no more levels left! You have reached the maximum!");
+                return;
+            }
+
             charLevels[charLevel].requiredXP = 0;
-            xpAmount -= charLevels[charLevel].requiredXP;
+            xp -= charLevels[charLevel].requiredXP;
             SetCharacterLevel(charLevel);
-            charLevels[charLevel].requiredXP -= xpAmount;
+            charLevels[charLevel].requiredXP -= xp;
         }
         else
         {
-            charLevels[charLevel].requiredXP -= xpAmount;
+            charLevels[charLevel].requiredXP -= xp;
         }
+        */
+        #endregion
     }
 
     #endregion
@@ -263,6 +320,10 @@ public class CharacterStats_SO : ScriptableObject
     public void LoseHealth(int damageAmount)
     {
         currentHealth -= damageAmount;
+
+        if (isHero)
+            OnHeroTakeDmg?.Invoke(damageAmount);
+
         if (currentHealth <= 0)
         {
             // I am retarded i didint put <= 0 xd you would live with 0 hp!!!!
@@ -326,6 +387,15 @@ public class CharacterStats_SO : ScriptableObject
 
     // For the Armour also we need to pass it info what item we want to remove and from what inventory. Since we dont have a slot for our Armour we dont need to
     // Specify an armourSlot!
+
+    #region Veränderungen die Ich im ArmourSystem machen würde!
+    //Da diese Method nur einfluss auf den totalArmourResistance hat sollte es nur die totalArmourResistance beeinflussen.
+    // Und eine Methode callen, die dan den currentDamage neu berechnet und ausgibt!
+
+    // Diese Methode sollte nur den totalArmor Resistance returnen und nicht den currentResistance!
+    // currentResistance = baseRes + totalArmourResistance
+    // total
+    #endregion
     public bool UnEquipArmor(ItemPickUp armorToRemove, CharacterInventory charInventory)
     {
         bool isArmorEquiped = false;
@@ -398,15 +468,12 @@ public class CharacterStats_SO : ScriptableObject
 
     // Ich bin ein Degenerate. Wieso mache ich nicht use von dieser Methode in ChatacterStats!
     // Dafür ist diese Methode doch da!
-
-   
-
-
-    public void SetCharacterLevel(int newLevel)
+    public void SetCharacterLevel(int currentLevel)
     {
         // Wieso newLevel + 1?? Weil arrays mit 0 beginnen!
-        charLevel = newLevel + 1;
+        charLevel = currentLevel + 1;
 
+        #region Tasks
         // Display LevelUp visualization.
         // We need to increase all of the Stats
         // We setup a charater levelup array and we can access that accoring to the level.
@@ -414,22 +481,58 @@ public class CharacterStats_SO : ScriptableObject
         // Since our Character starts at lvl 1 but an array starts at index 0 we need to substract 1 from the index.
 
         // -We can make the choice to fill all the current Stats to the maximum on level up like a lot of games do!
-
-        maxHealth = charLevels[newLevel].maxHealth;
+        #endregion
+        maxHealth = charLevels[currentLevel].maxHealth;
         currentHealth = maxHealth;
 
-        maxMana = charLevels[newLevel].maxMana;
+        maxMana = charLevels[currentLevel].maxMana;
         currentMana = maxMana;
 
-        maxEncumbrance = charLevels[newLevel].maxEmcumbrance;
+        maxEncumbrance = charLevels[currentLevel].maxEmcumbrance;
 
-        maxWealth = charLevels[newLevel].maxWealth;
+        maxWealth = charLevels[currentLevel].maxWealth;
 
-        baseDamage = charLevels[newLevel].baseDamage;
+        baseDamage = charLevels[currentLevel].baseDamage;
+        if (weapon == null)
+            currentDamage = baseDamage;
+        else
+            #region Kommentar Problem was ensteht, wennd er Character leveled
+            // Wenn der character Leveled muss sein Damage natürlich auf den Damage der Waffe + dem neuen baseWert des Characters gesetzt werden!
+
+            // Wenn der character Leveled verändert sich sein baseDamage und dadurch 
+            // auch sein currentDamage. Da der currentDamage aber auch von der Waffe abhängt müssen wir den Damage 
+            // der Waffe herausfinden. Ich würde das anders lösen. LevelUp sollte nur den BaseDamage verändern. Was
+            // Automatisch den currentDamage verändern sollte. Das sollte auch der Fall sein, wenn man eine Waffe Equipped!
+
+            // Ein LevelUp verändert nur die Charstats aber nicht die WaffenStats und deswegen sollte imo
+            // hier nicht der currentDamage verändert werden! Ich werde das noch verbessern!
+            #endregion
+            currentDamage = weapon.itemDefinition.itemAmount + baseDamage;
+
         // Hier haben wir ein Problem, da sich unser currentDamage aus dem baseDamage + weaponDamage zusammensetzt!
         // Das selbe gilt für currentResistance!
 
-        baseResistance = charLevels[newLevel].baseResistance;
+        baseResistance = charLevels[currentLevel].baseResistance;
+        // Das currentArmor setzt sich zusammen aus baseResistance und der Summe aller Armor Werte der 
+        // Armor item die der Character equipped hat!
+
+        #region Check if Character gets leveled
+        // Wozu brauchen wir diesen Check?
+
+        // Wir brauchen den Check um zu gucken, ob der Character Level 2 kommt. 
+        // Wir wollen das Event nicht triggern, wenn das Spiel startet und er Char auf level 1 gesetzt wird!
+
+        // Ich bin generell noch vervirrt mit diesem + 1
+        // index 0 ist level 1
+        // index 1 ist level 2
+        // index 2 ist levle 3
+        // charLevel representiert den currentLevel des Chars.
+
+        // Hero we dont have to check if it isHero because this is done prior to calling this Method!
+        #endregion
+        if (charLevel > 1)
+            Debug.Log("Event Invoked");
+            OnHeroLevelUp?.Invoke(charLevel);
     }
 
     private void Death()
@@ -437,9 +540,14 @@ public class CharacterStats_SO : ScriptableObject
         //Debug.Log("You are dead");
 
         // Actions that are triggered on Death!
+        if (isHero)
+            OnHeroDeath?.Invoke();
+
         // Call to GameManger for DeathState to trigger respawn
         // Display Death visualazations
     }
+
+    // this will be called when the Hero is initialized
 
     #endregion
 

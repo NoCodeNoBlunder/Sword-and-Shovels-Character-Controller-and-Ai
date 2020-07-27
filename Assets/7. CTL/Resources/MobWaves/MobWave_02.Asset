@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: MobWave_02
   m_EditorClassIdentifier: 
   NumberOfMobsToSpawn: 6
-  ExperiencePerKill: 15
+  ExperiencePerKill: 25
   WaveCompletionValue: 50
-  HealthMultiplicator: 2
+  HealthMultiplicator: 1.75
   DamageMultiplicator: 2
-  ResistanceMultiplicator: 2
+  ResistanceMultiplicator: 1.75

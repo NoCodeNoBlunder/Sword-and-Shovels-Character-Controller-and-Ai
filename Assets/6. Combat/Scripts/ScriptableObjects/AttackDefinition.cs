@@ -19,6 +19,11 @@ public class AttackDefinition : ScriptableObject
     public float critMuliplayer;
     public float critChance;
 
+    public int AverageDamage
+    {
+        get { return (minDamage + maxDamage) / 2; }
+    }
+
     // This Method will Create and return an Attack Object. 
     // -It needs information about how is the attacker and who is receiving the damage
     public Attack CreateAttack(CharacterStats wielderStats, CharacterStats deffenderStats)

@@ -18,6 +18,7 @@ public class AttackedTakeDamage : MonoBehaviour, IAttackable
     public void OnAttack(GameObject attacker, Attack attack)
     {
         charStats.LoseHealth(attack.Damage);
+
         if (charStats.GetHealth() <= 0)
         {
             // Destroy Object

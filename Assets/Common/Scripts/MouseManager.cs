@@ -99,12 +99,10 @@ public class MouseManager : MonoSingleton<MouseManager>
                 door = true;
             }
 
-            // Funktioniert nicht!
-            //bool chest = false;
-            if (hit.collider.gameObject.tag == "Chest")
+            bool isLootable = hit.collider.gameObject.GetComponent<ILootable>() != null;
+            if (isLootable)
             {
                 Cursor.SetCursor(doorway, new Vector2(16, 16), CursorMode.Auto);
-                door = true;
             }
 
             // If the object that is hit by the ray implements the IAttackable interface is it attackable!
@@ -172,9 +170,21 @@ public class MouseManager : MonoSingleton<MouseManager>
                 }
                 else if (isAttackable)
                 {
+                    //Debug.Log("Is Attackable is entered");
                     GameObject attackable = hit.collider.gameObject;
                     // We Subscribe to this Method via Inspector. Downside: It wont be shown in the references what methods are subscribed!
-                    OnClickOnAttackable.Invoke(attackable);
+                    OnClickOnAttackable?.Invoke(attackable);
+                }
+                else if (isLootable)
+                {
+                    //Debug.Log("Is Chest is entered");
+                    GameObject lootable = hit.collider.gameObject;
+
+                    var lootables = lootable.GetComponentsInChildren<ILootable>();
+                    foreach (var l in lootables)
+                    {
+                        l.OnLooting();
+                    }
                 }
                 // Clicked on Environment. Observation: If we had a lot of more different types of objects to click on it would make sense to use a FSM for this!
                 else

@@ -12,9 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbf757da5466fa14dbf4732eccdc6163, type: 3}
   m_Name: MainCharacterStats
   m_EditorClassIdentifier: 
+  OnHeroLevelUp:
+    m_PersistentCalls:
+      m_Calls: []
   isHero: 1
   setManually: 1
   saveDataOnClose: 0
+  charExperience: 0
+  charLevel: 0
   maxHealth: 0
   currentHealth: 0
   maxMana: 0
@@ -23,35 +28,30 @@ MonoBehaviour:
   currentDamage: 0
   baseResistance: 0
   currentResistance: 0
+  currentArmor: 0
   maxWealth: 0
   currentWealth: 0
   maxEncumbrance: 0
   currentEncumbrance: 0
-  charExperience: 0
-  charLevel: 0
   charLevels:
-  - maxHealth: 0
-    maxMana: 0
-    baseDamage: 0
-    baseResistance: 0
-    maxWealth: 0
-    maxEmcumbrance: 0
-    requiredXP: 0
-  - maxHealth: 40
+  - LEVEL: 0
+    maxHealth: 40
     maxMana: 100
     baseDamage: 3
     baseResistance: 0
     maxWealth: 15
     maxEmcumbrance: 20
     requiredXP: 0
-  - maxHealth: 100
+  - LEVEL: 0
+    maxHealth: 100
     maxMana: 200
     baseDamage: 4
     baseResistance: 0
     maxWealth: 15
     maxEmcumbrance: 20
     requiredXP: 100
-  - maxHealth: 150
+  - LEVEL: 0
+    maxHealth: 150
     maxMana: 200
     baseDamage: 5
     baseResistance: 1

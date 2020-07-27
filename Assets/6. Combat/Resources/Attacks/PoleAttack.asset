@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cooldown: 2
   range: 3.1
-  minDamage: 2
-  maxDamage: 7
+  minDamage: 0
+  maxDamage: 4
   critMuliplayer: 3
   critChance: 0.01
   weaponPrefab: {fileID: 598290557279339066, guid: b5b2b9707e579944e86705dd9d25b3de,
